@@ -30,7 +30,8 @@ parser.add_argument("-f", "--force", type=bool, default=False,
 parser.add_argument("--fp_type", default='rdkit',
                     help="Choose fingerprint type: rdkit, morgan2")
 args = parser.parse_args()
-   
+
+print("Start process using: ", args)   
 
 starttime= datetime.now()
 
@@ -96,7 +97,9 @@ def generator_from_file_in_blocks(f, limit=10000):
         assert (limit > 0) and isinstance(limit, int), "Please specify an positive integer."
         for i, row in enumerate(f):
             if i > limit:
-                raise StopIteration(f"Reached Limit of {limit}")
+                # raise StopIteration(f"Reached Limit of {limit}") # Python <= 3.6
+                print("Reached specified limit")
+                return
             else:
                 yield row
 
