@@ -15,6 +15,8 @@ def add_arguments(parser):
                         default=0.5,
                         help=('Include virtual molecules with a similarity to targets.')
                         )
+    parser.add_argument("-f", "--force", type=bool, default=False,  
+                    help="Set flag to overwrite previous results")
 
 def process_args(args):
     """
@@ -38,7 +40,7 @@ def process_args(args):
         print(f"Search for files in: {_cwd}")
         inpath=_cwd
 
-    inputs = glob.glob('*/*'+args.pattern, recursive=True)
+    inputs = glob.glob('**/*'+args.pattern, recursive=True)
 
     if len(inputs) > 0:
         print(f"Found {len(inputs)} input files:")
@@ -84,3 +86,21 @@ class DumpsResults():
             pickle.dump(obj, file=f)
             print("Saved results to:", fname)
         self.i += 1
+
+
+def write_blob(k, cache, path='./blobs/'):
+    os.makedirs(path, exist_ok=True)
+    fname = os.path.join(path, f"real_blob_{k}.pkl")
+    with open(fname, 'wb') as f:
+        pickle.dump(cache, f)
+    return fname
+
+def read_blob(path):
+    with open(path, 'rb') as f:
+        l_in_mem = pickle.load(f)
+    return l_in_mem
+
+
+def make_string(*args):
+    l_result = [str(x) for x in args]
+    return '\t'.join(l_result)

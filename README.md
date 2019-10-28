@@ -1,14 +1,28 @@
 
 ### ToDos
+- [chemfp](https://chemfp.readthedocs.io/en/latest/using-api.html)
 - add caching of fingerprints
 - test on server
+- check [fragmentation algorithm](https://www.rdkit.org/docs/source/rdkit.Chem.Fraggle.FraggleSim.html#fragmentation-algorithm) on results?
+
+## Install rdkit using anaconda
+- install [rdkit](https://www.rdkit.org/docs/Install.html#cross-platform-under-anaconda-python-fastest-install) using anaconda
+- add [postgres](https://www.rdkit.org/docs/Install.html#installing-and-using-postgresql-and-the-rdkit-postgresql-cartridge-from-a-conda-environment) installation using anaconda
+
+## Solution using rdkit functionality
+1. Create Postgres Database [Cartridge](https://www.rdkit.org/docs/Cartridge.html)
+2. Use [SimilarityScreener](https://www.rdkit.org/docs/source/
+rdkit.Chem.Fingerprints.SimilarityScreener.html#rdkit.Chem.Fingerprints.SimilarityScreener.SimilarityScreener)
 
 ### Data
-Download the files from:
+
+Download the Enamine REAL files (log in needed):
 ```bash
 >>> wc -l 2019q1-2_Enamine_REAL_723M_SMILES_Part_01.smiles
 60262532 2019q1-2_Enamine_REAL_723M_SMILES_Part_01.smiles
 ```
+
+List of available Fingerprints in rdkit: [here](https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-fingerprints)
 
 ### Similarity metrics between Fingerprints
 - Available similarity metrics include Tanimoto, Dice, Cosine, Sokal, Russel, Kulczynski, McConnaughey, and Tversky.

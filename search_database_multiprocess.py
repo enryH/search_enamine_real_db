@@ -14,6 +14,7 @@ from rdkit.DataStructs.cDataStructs import TanimotoSimilarity
 from utils import add_arguments
 from utils import process_args
 from utils import format_duration
+from utils import make_string
 
 LIMIT = os.environ.get("LIMIT", 200000)
 
@@ -25,10 +26,9 @@ parser.add_argument("--cpus", type=int, default=os.cpu_count()-3,
 parser.add_argument("--limit", type=int, default=LIMIT,
                     help='Maximum number of molecules to compare to. '
                          'Default is set by LIMIT environment variable or 200.000')
-parser.add_argument("-f", "--force", type=bool, default=False,  
-                    help="Set flag to overwrite previous results")
 parser.add_argument("--fp_type", default='rdkit',
                     help="Choose fingerprint type: rdkit, morgan2")
+
 args = parser.parse_args()
 
 print("Start process using: ", args)   
@@ -83,8 +83,7 @@ def process_row(row:str, ref=ref):
         tanimoto_sim = TanimotoSimilarity(ref, mol)
         if tanimoto_sim >= args.tanimoto_threshold:
             print(f"Added Molecule with id: {idx}")
-            l_result = [str(x) for x in [smiles, idx, tanimoto_sim]]
-            return '\t'.join(l_result)
+            return make_string(smiles, idx, tanimoto_sim)
         # print(f"Too low Tanimoto Similarity for mol with id {idx}:\t {tanimoto_sim}")
     except:
         print("Failed to read row:", row)
