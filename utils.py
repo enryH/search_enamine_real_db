@@ -39,8 +39,9 @@ def process_args(args):
         inpath=_cwd
 
     inputs = glob.glob('**/*'+args.pattern, recursive=True)
-
+    
     if len(inputs) > 0:
+        inputs = [os.path.abspath(f) for f in inputs]
         print(f"Found {len(inputs)} input files:")
         print("-",'\n- '.join(inputs))
     else:
@@ -97,7 +98,8 @@ class BlobsIO():
             if overwrite:
                 pass
             else:
-                raise IOError('Path already exist. Please delete before continuing.')
+                raise IOError('Path already exist.'
+                              f'Please delete before continuing: {self.folder}')
         self.k = 0
 
     def write_blob(self, cache):
