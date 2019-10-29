@@ -104,7 +104,6 @@ class BlobsIO():
 
     def write_blob(self, cache):
         fname = os.path.join(self.folder, f"real_blob_{self.k:02}.pkl")
-        import pdb; pdb.set_trace()
         with open(fname, 'wb') as f:
             pickle.dump(cache, f)
         print("Wrote file:", fname)

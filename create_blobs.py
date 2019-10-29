@@ -71,7 +71,7 @@ assert args.number in range(1,13), "Select a number from 1 to 12 for flag --numb
 #This will pick up the last filename, if it exits, but even it is not matched
 for filename in inputs:
     # if fnmatch.fnmatch(filename, f'{args.number}.smiles'):
-    if f'{args.number}.smiles' in filename:
+    if f'{args.number:02}.smiles' in filename:
         print("Selected:", filename)
         break
 print("Selected file:", filename)
@@ -88,7 +88,10 @@ blobs = []
 with open(filename) as f:
     blob_io = BlobsIO(part=part_id, path=outpath,
                       overwrite=True if args.force else False)
-    for row in tqdm(f, desc=f'Part {part_id:02}', ascii=True, total=N_PER_FILE):
+    for row in tqdm(f, desc=f'Part {part_id:02}', 
+                    mininterval=20,
+                    maxinterval=60,
+                    ascii=True, total=N_PER_FILE):
         t_result = process_row(row)
         if t_result is not None:
             cache.append(t_result)
