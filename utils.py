@@ -5,8 +5,6 @@ import pickle
 def add_arguments(parser):
     parser.add_argument("--reference_mol", type=str, default='COC1=C(OCCCN2CCOCC2)C=C2C(NC3=CC(Cl)=C(F)C=C3)=NC=NC2=C1',  # Gefitinib, Iressa
                         help='Molecule(s) of interest for which analoges are required.')
-    parser.add_argument("--outpath", type=str, default='./results',
-                        help="Path to save results.")
     parser.add_argument('--input_folder',  type=str, default='.', 
                         help='Search path for inputs. Subdirectories will be included!')
     parser.add_argument('--pattern', type=str, default='.smiles',
@@ -68,9 +66,9 @@ class DumpsResults():
     def __init__(self, folder:str, path='.', fname="results", overwrite=False):
         self.parentfolder = path
         self.folder = folder
-        self.fname = fname + "_{}"
+        self.fname = fname + "_{:02}"
         self.path = os.path.join(self.parentfolder, self.folder)
-        self.fpath = os.path.join(self.path, fname)
+        self.fpath = os.path.join(self.path, self.fname)
         try:
             os.makedirs(self.path)
         except FileExistsError:
@@ -88,19 +86,42 @@ class DumpsResults():
         self.i += 1
 
 
-def write_blob(k, cache, path='./blobs/'):
-    os.makedirs(path, exist_ok=True)
-    fname = os.path.join(path, f"real_blob_{k}.pkl")
-    with open(fname, 'wb') as f:
-        pickle.dump(cache, f)
-    return fname
+class BlobsIO():
+    def __init__(self, part, path='./blobs', overwrite=False):
+        self.path = path
+        folder = 'part_{:02}'.format(part)
+        self.folder = os.path.join(self.path, folder)
+        try:
+            os.makedirs(self.folder, exist_ok=False)
+        except IOError:
+            if overwrite:
+                pass
+            else:
+                raise IOError('Path already exist. Please delete before continuing.')
+        self.k = 0
 
-def read_blob(path):
-    with open(path, 'rb') as f:
+    def write_blob(self, cache):
+        fname = os.path.join(self.folder, f"real_blob_{self.k:02}.pkl")
+        import pdb; pdb.set_trace()
+        with open(fname, 'wb') as f:
+            pickle.dump(cache, f)
+        print("Wrote file:", fname)
+        self.k += 1
+        return fname
+
+    def get_list_of_blobs(self, part=None):
+        raise NotImplementedError
+
+def read_blob(file):
+    with open(file, 'rb') as f:
         l_in_mem = pickle.load(f)
     return l_in_mem
-
 
 def make_string(*args):
     l_result = [str(x) for x in args]
     return '\t'.join(l_result)
+
+def find_int(filename):
+    "Return last integer in fname."
+    return int(filename.split('.')[0].split('_')[-1])
+

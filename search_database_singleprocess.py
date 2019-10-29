@@ -9,6 +9,8 @@ import profile
 
 from datetime import datetime
 
+import pathlib
+
 import rdkit
 from rdkit import Chem
 from rdkit.Chem.Fingerprints import FingerprintMols
@@ -21,9 +23,12 @@ from utils import format_duration
 from utils import read_blob
 from utils import make_string
 from utils import DumpsResults
+from utils import find_int
 
 parser = argparse.ArgumentParser()
 add_arguments(parser)
+parser.add_argument("--outpath", type=str, default='./results',
+                    help="Path to save results.")
 args = parser.parse_args()
 
 starttime= datetime.now()
@@ -68,55 +73,66 @@ def process_row_str(row:str, ref=ref):
         print(f"Added Molecule to results from line: {line}")
         return make_string(smiles, id, tanimoto_sim)
 
+def check_for_part_in_path(path:pathlib.Path):
+    folder = path.parent.stem
+    if "part" in folder:
+        return folder
+    else:
+        return ''
 
-if __name__=='__main__':
-    def check_file(filename, ref=ref, limit=100000):
-        # global results
-        results = []
 
-        file_type= filename.split(".")[-1]
-        if file_type == "smiles":
-            with open(filename) as f:
-                for line_no, row in enumerate(f):
-                    try:
-                        result = process_row_str(row)
-                        if result is not None:
-                            results.append(result)
-                            # if len(results) > 1000:
-                            #     dump(results)
-                            #     results = []
-                    except:
-                        print(f"Failed to read line {line_no}")
-                    if line_no >= limit:
-                        break
-            return results
-        elif file_type == "pkl":
-            fp_in_mem = read_blob(filename)
-            blob_id = int(filename.split('.')[0].split('_')[-1])
-            fname_result = 'results_blob_{:03}_no'.format(blob_id)
-            dump = DumpsResults(folder=args.reference_mol, path=outpath, 
-                                fname=fname_result, overwrite=args.force)
-            for _tuple in fp_in_mem:
-                try: 
-                    idx, fp, smiles = _tuple
-                    tanimoto_sim = TanimotoSimilarity(ref, fp)
-                    if tanimoto_sim >= args.tanimoto_threshold:
-                        print(f"Added Molecule to results: {idx}")
-                        result = make_string(smiles, idx, tanimoto_sim)
+def check_file(filename, ref=ref, limit=100000):
+    # global results
+    results = []
+    path = pathlib.Path(filename)
+    file_type=path.suffix
+    if file_type == ".smiles":
+        with open(filename) as f:
+            for line_no, row in enumerate(f):
+                try:
+                    result = process_row_str(row)
+                    if result is not None:
                         results.append(result)
-                        if len(results) > 1000:
-                            dump(results)
-                            results = []
-                except TypeError as e:
-                    print(e)
-            dump(results)
-            print(f"Checked for {len(fp_in_mem)} molecules.")
-        return 
+                        # if len(results) > 1000:
+                        #     dump(results)
+                        #     results = []
+                except:
+                    print(f"Failed to read line {line_no}")
+                if line_no >= limit:
+                    break
+        return results
+    elif file_type == ".pkl":
+        fp_in_mem = read_blob(filename)
+        id = find_int(filename)
+        fname_result = 'results_blob_{:02}'.format(id)
+        subfolder = check_for_part_in_path(path)
+        dump = DumpsResults(folder=os.path.join(args.reference_mol, subfolder), 
+                            path=outpath, 
+                            fname=fname_result, overwrite=args.force)
+        for _tuple in fp_in_mem:
+            try: 
+                idx, fp, smiles = _tuple
+                tanimoto_sim = TanimotoSimilarity(ref, fp)
+                if tanimoto_sim >= args.tanimoto_threshold:
+                    # print(f"Added Molecule to results: {idx}")
+                    result = make_string(smiles, idx, tanimoto_sim)
+                    results.append(result)
+                    if len(results) > 1000:
+                        dump(results)
+                        results = []
+            except TypeError as e:
+                print(e)
+        dump(results)
+        print(f"Checked for {len(fp_in_mem)} molecules.")
+    else:
+        raise ValueError("Filetype unkown: {}".format(file_type))
+    return 
 
-    dump = DumpsResults(folder=args.reference_mol, path=outpath, overwrite=args.force)
-    for filename in inputs:
-        check_file(filename)
 
-    endtime = datetime.now()
-    print(format_duration(starttime, endtime))
+for filename in inputs:
+    print("Check fps in blob:", filename)
+    check_file(filename)
+
+endtime = datetime.now()
+print(format_duration(starttime, endtime))
 

@@ -12,16 +12,22 @@ from rdkit.Chem.Fingerprints import FingerprintMols
 from rdkit import DataStructs
 from rdkit.DataStructs.cDataStructs import TanimotoSimilarity
 
+import utils
 from utils import add_arguments
 from utils import process_args
 from utils import format_duration
-from utils import write_blob
+from utils import BlobsIO
 
 
 parser = argparse.ArgumentParser()
 add_arguments(parser)
+parser.add_argument("--outpath", type=str, default='./blobs',
+                    help="Path to save blobs of fingerprints.")
 parser.add_argument('-n', '--number', type=int, default=2,
                     help='Select part of enamine real database. 1-12')
+
+
+
 args = parser.parse_args()
 
 starttime= datetime.now()
@@ -29,23 +35,6 @@ starttime= datetime.now()
 # AllChem.GetMorganFingerprint(reference,2)
 # FingerprintMols.FingerprintMol(reference)
 # FingerprintMols.GetRDKFingerprint
-
-Fingerprint = FingerprintMols.FingerprintMol
-
-_cwd, inpath, outpath, inputs = process_args(args)
-
-assert args.number in range(1,13), "Select a number from 1 to 12 for flag --number."
-#This will pick up the last filename, if it exits, but even it is not matched
-for filename in inputs:
-    if fnmatch.fnmatch(filename, '{}.smiles'):
-        break
-print("Selected file:", filename)
-
-i=1
-k=1
-cache = []
-blobs = []
-
 
 def process_row(row:str):
     """
@@ -68,19 +57,39 @@ def process_row(row:str):
     except:
         print("Failed to read row:", row)
 
+
+Fingerprint = FingerprintMols.FingerprintMol
+
+_cwd, inpath, outpath, inputs = process_args(args)
+
+assert args.number in range(1,13), "Select a number from 1 to 12 for flag --number."
+#This will pick up the last filename, if it exits, but even it is not matched
+for filename in inputs:
+    if fnmatch.fnmatch(filename, '{}.smiles'):
+        break
+print("Selected file:", filename)
+
+part_id = utils.find_int(filename)
+
+
+i=1
+cache = []
+blobs = []
+
+
 with open(filename) as f:
-    
+    blob_io = BlobsIO(part=part_id, path=outpath,
+                      overwrite=True if args.force else False)
     for line_no, row in enumerate(f):
         t_result = process_row(row)
         if t_result is not None:
             cache.append(t_result)
         if (i % 1000001) == 0:
-            fname = write_blob(k, cache)
+            fname = blob_io.write_blob(cache=cache)
             blobs.append(fname)
             cache = []
-            k += 1
         i += 1
-    fname = write_blob(k, cache)
+    fname = blob_io.write_blob(cache=cache)
     blobs.append(fname)
     cache = []
 
