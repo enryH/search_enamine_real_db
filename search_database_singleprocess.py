@@ -102,13 +102,13 @@ def check_file(filename, ref=ref, limit=100000):
                     break
         return results
     elif file_type == ".pkl":
-        fp_in_mem = read_blob(filename)
         id = find_int(filename)
         fname_result = 'results_blob_{:02}'.format(id)
         subfolder = check_for_part_in_path(path)
         dump = DumpsResults(folder=os.path.join(args.reference_mol, subfolder), 
                             path=outpath, 
                             fname=fname_result, overwrite=args.force)
+        fp_in_mem = read_blob(filename)
         for _tuple in fp_in_mem:
             try: 
                 idx, fp, smiles = _tuple
