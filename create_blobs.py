@@ -12,11 +12,16 @@ from rdkit.Chem.Fingerprints import FingerprintMols
 from rdkit import DataStructs
 from rdkit.DataStructs.cDataStructs import TanimotoSimilarity
 
+from tqdm import tqdm
+
 import utils
 from utils import add_arguments
 from utils import process_args
 from utils import format_duration
 from utils import BlobsIO
+
+
+N_PER_FILE = 60262532
 
 
 parser = argparse.ArgumentParser()
@@ -65,7 +70,9 @@ _cwd, inpath, outpath, inputs = process_args(args)
 assert args.number in range(1,13), "Select a number from 1 to 12 for flag --number."
 #This will pick up the last filename, if it exits, but even it is not matched
 for filename in inputs:
-    if fnmatch.fnmatch(filename, '{}.smiles'):
+    # if fnmatch.fnmatch(filename, f'{args.number}.smiles'):
+    if f'{args.number}.smiles' in filename:
+        print("Selected:", filename)
         break
 print("Selected file:", filename)
 
@@ -77,10 +84,11 @@ cache = []
 blobs = []
 
 
+
 with open(filename) as f:
     blob_io = BlobsIO(part=part_id, path=outpath,
                       overwrite=True if args.force else False)
-    for line_no, row in enumerate(f):
+    for row in tqdm(f, desc=f'Part {part_id:02}', ascii=True, total=N_PER_FILE):
         t_result = process_row(row)
         if t_result is not None:
             cache.append(t_result)
