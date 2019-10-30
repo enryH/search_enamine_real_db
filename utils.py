@@ -29,14 +29,19 @@ def process_args(args):
     print(f"Script is executed from: {_cwd}")
 
     inpath=glob.os.path.abspath(args.input_folder)
+    # inpath=os.path.normpath(inpath)
+
     outpath=glob.os.path.abspath(args.outpath)
 
     try:
         glob.os.chdir(inpath)
-    except:
-        print(f"Could change to {inpath}")
-        print(f"Search for files in: {_cwd}")
-        inpath=_cwd
+    except FileNotFoundError as e:
+        print(f"Could not find folder: {inpath}")
+        raise FileNotFoundError("Could not find processed files:\n"
+                                f"in relativ path: {inpath}\n"
+                                f"in working Dir: {_cwd}\n"
+                                f"giving absolut path: {os.path.normpath(inpath)}\n")
+        # inpath=_cwd
 
     inputs = glob.glob('**/*'+args.pattern, recursive=True)
     
@@ -45,7 +50,7 @@ def process_args(args):
         print(f"Found {len(inputs)} input files:")
         print("-",'\n- '.join(inputs))
     else:
-        raise FileNotFoundError(f"No input files found using pattern: {args.pattern} "
+        raise e(f"No input files found using pattern: {args.pattern} "
                                 f"in {_cwd} folder and all its subfolders.")
     return _cwd, inpath, outpath, inputs
 

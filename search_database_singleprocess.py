@@ -48,9 +48,6 @@ print(f"Fingerprint lenght: {ref.GetNumBits()}")
 
 _cwd, inpath, outpath, inputs = process_args(args)
 
-filename=inputs[0]
-
-
 # Not cached:
 def process_row_str(row:str, ref=ref):
     """
