@@ -40,12 +40,16 @@ fi
 n_iter=$((12/$cpus))
 echo "Perform $n_iter loops."
 
+#python create_blobs.py -n 1 & python create_blobs.py -n 2 & python create_blobs.py -n 3 & python create_blobs.py -n 4 & python create_blobs.py -n 5 & python create_blobs.py -n 6 & python create_blobs.py -n 7 & python create_blobs.py -n 8 & python create_blobs.py -n 9 & python create_blobs.py -n 10 & python create_blobs.py -n 11 & python create_blobs.py -n 12 & wait
+
 cmd=''
 for NO in {1..12..1}
 do
     cmd="$cmd python create_blobs.py -n $NO &"
     if ! (($NO % $cpus)); then
-        $cmd wait
+	echo "$cmd wait"
+        #bash #!/bin/bash; $cmd wait
+	eval $cmd wait
         cmd=''
     fi
 done
