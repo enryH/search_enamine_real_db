@@ -4,6 +4,8 @@
 - add caching of fingerprints
 - test on server
 - check [fragmentation algorithm](https://www.rdkit.org/docs/source/rdkit.Chem.Fraggle.FraggleSim.html#fragmentation-algorithm) on results?
+- Speed up data preparation: Ideas
+     -  [load chuncs](https://stackoverflow.com/questions/49752452/using-a-python-generator-to-process-large-text-files)
 
 ## Install rdkit using anaconda
 - install [rdkit](https://www.rdkit.org/docs/Install.html#cross-platform-under-anaconda-python-fastest-install) using anaconda

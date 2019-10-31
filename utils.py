@@ -35,13 +35,12 @@ def process_args(args):
 
     try:
         glob.os.chdir(inpath)
-    except FileNotFoundError as e:
+    except FileNotFoundError as err:
         print(f"Could not find folder: {inpath}")
         raise FileNotFoundError("Could not find processed files:\n"
-                                f"in relativ path: {inpath}\n"
-                                f"in working Dir: {_cwd}\n"
-                                f"giving absolut path: {os.path.normpath(inpath)}\n")
-        # inpath=_cwd
+                    f"in relativ path: {inpath}\n"
+                    f"in working Dir: {_cwd}\n"
+                    f"giving absolut path: {os.path.normpath(inpath)}\n")
 
     inputs = glob.glob('**/*'+args.pattern, recursive=True)
     
@@ -50,8 +49,8 @@ def process_args(args):
         print(f"Found {len(inputs)} input files:")
         print("-",'\n- '.join(inputs))
     else:
-        raise e(f"No input files found using pattern: {args.pattern} "
-                                f"in {_cwd} folder and all its subfolders.")
+        raise FileNotFoundError(f"No input files found using pattern: {args.pattern} "
+                                f"in {inpath} folder and all its subfolders.")
     return _cwd, inpath, outpath, inputs
 
 
@@ -75,14 +74,15 @@ class DumpsResults():
         self.fname = fname + "_{:02}"
         self.path = os.path.join(self.parentfolder, self.folder)
         self.fpath = os.path.join(self.path, self.fname)
-        try:
-            os.makedirs(self.path)
-        except FileExistsError:
+        
+        os.makedirs(self.path, exist_ok=True) # folder is allowed to exist
+        self.i = 1
+        if self.fname.format(self.i) in os.listdir(self.path):  
             if overwrite:
                 pass
             else:
                 raise FileExistsError("Run previously executed. Abort")
-        self.i = 1
+        
 
     def __call__(self, obj):
         fname = self.fpath.format(self.i)

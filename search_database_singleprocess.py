@@ -102,25 +102,29 @@ def check_file(filename, ref=ref, limit=100000):
         id = find_int(filename)
         fname_result = 'results_blob_{:02}'.format(id)
         subfolder = check_for_part_in_path(path)
-        dump = DumpsResults(folder=os.path.join(args.reference_mol, subfolder), 
+        try:
+            #abort in case file already exists.
+            dump = DumpsResults(folder=os.path.join(args.reference_mol, subfolder), 
                             path=outpath, 
-                            fname=fname_result, overwrite=args.force)
-        fp_in_mem = read_blob(filename)
-        for _tuple in fp_in_mem:
-            try: 
-                idx, fp, smiles = _tuple
-                tanimoto_sim = TanimotoSimilarity(ref, fp)
-                if tanimoto_sim >= args.tanimoto_threshold:
-                    # print(f"Added Molecule to results: {idx}")
-                    result = make_string(smiles, idx, tanimoto_sim)
-                    results.append(result)
-                    if len(results) > 1000:
-                        dump(results)
-                        results = []
-            except TypeError as e:
-                print(e)
-        dump(results)
-        print(f"Checked for {len(fp_in_mem)} molecules.")
+                            fname=fname_result, overwrite=args.force)           
+            fp_in_mem = read_blob(filename)
+            for _tuple in fp_in_mem:
+                try: 
+                    idx, fp, smiles = _tuple
+                    tanimoto_sim = TanimotoSimilarity(ref, fp)
+                    if tanimoto_sim >= args.tanimoto_threshold:
+                        # print(f"Added Molecule to results: {idx}")
+                        result = make_string(smiles, idx, tanimoto_sim)
+                        results.append(result)
+                        if len(results) > 1000:
+                            dump(results)
+                            results = []
+                except TypeError as e:
+                    print(e)
+            dump(results)
+            print(f"Checked for {len(fp_in_mem)} molecules.")
+        except FileExistsError:
+            print(f"Files for blob already exist: f{filename} ")
     else:
         raise ValueError("Filetype unkown: {}".format(file_type))
     return 
