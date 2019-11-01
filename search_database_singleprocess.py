@@ -1,5 +1,5 @@
 """
-    ipython search_database_singleprocess.py -i -- --input_folder blobs --pattern pkl
+    ipython search_database_singleprocess.py -i -- --input_folder blobs --pattern pkl --reference_mol CCC1CC
 """
 
 
@@ -116,7 +116,7 @@ def check_file(filename, ref=ref, limit=100000):
                         # print(f"Added Molecule to results: {idx}")
                         result = make_string(smiles, idx, tanimoto_sim)
                         results.append(result)
-                        if len(results) > 1000:
+                        if len(results) >= 1000:
                             dump(results)
                             results = []
                 except TypeError as e:

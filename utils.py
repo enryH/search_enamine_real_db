@@ -10,11 +10,24 @@ def add_arguments(parser):
     parser.add_argument('--pattern', type=str, default='.smiles',
                         help='pattern of files which should be ')
     parser.add_argument('--tanimoto_threshold', type=float, 
-                        default=0.5,
+                        default=0.7,
                         help=('Include virtual molecules with a similarity to targets.')
                         )
     parser.add_argument("-f", "--force", type=bool, default=False,  
                     help="Set flag to overwrite previous results")
+
+def get_files(inpath, pattern):
+    try:
+        os.chdir(inpath)
+    except FileNotFoundError as err:
+        print(f"Could not find folder: {inpath}")
+        raise FileNotFoundError("Could not find processed files:\n"
+                    f"in relativ path: {inpath}\n"
+                    f"in working Dir: {os.getcwd()}\n"
+                    f"giving absolut path: {os.path.normpath(inpath)}\n")
+
+    inputs = glob.glob('**/*'+pattern, recursive=True)
+    return inputs
 
 def process_args(args):
     """
@@ -33,17 +46,8 @@ def process_args(args):
 
     outpath=glob.os.path.abspath(args.outpath)
 
-    try:
-        glob.os.chdir(inpath)
-    except FileNotFoundError as err:
-        print(f"Could not find folder: {inpath}")
-        raise FileNotFoundError("Could not find processed files:\n"
-                    f"in relativ path: {inpath}\n"
-                    f"in working Dir: {_cwd}\n"
-                    f"giving absolut path: {os.path.normpath(inpath)}\n")
+    inputs = get_files(inpath, args.pattern)    
 
-    inputs = glob.glob('**/*'+args.pattern, recursive=True)
-    
     if len(inputs) > 0:
         inputs = [os.path.abspath(f) for f in inputs]
         print(f"Found {len(inputs)} input files:")
@@ -86,8 +90,8 @@ class DumpsResults():
 
     def __call__(self, obj):
         fname = self.fpath.format(self.i)
-        with open(fname, "wb") as f:
-            pickle.dump(obj, file=f)
+        with open(fname, "w") as f:
+            f.writelines(obj)
             print("Saved results to:", fname)
         self.i += 1
 
@@ -125,7 +129,7 @@ def read_blob(file):
 
 def make_string(*args):
     l_result = [str(x) for x in args]
-    return '\t'.join(l_result)
+    return '\t'.join(l_result) + '\n'
 
 def find_int(filename):
     "Return last integer in fname."

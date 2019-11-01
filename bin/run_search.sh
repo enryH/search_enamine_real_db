@@ -12,8 +12,14 @@ while [ "$1" != "" ]; do
         -c | --cpus )           shift
                                 cpus=$1
                                 ;;
-        -e | --env )            shift
-                                env=$1
+        -q | --query)           shift
+                                query=$1
+                                ;;
+        -f | --force)           shift
+                                overwrite=$1
+                                ;;
+        -t | --threshold)       shift
+                                threshold=$1
                                 ;;
         -h | --help )           usage
                                 exit
@@ -25,11 +31,13 @@ while [ "$1" != "" ]; do
 done
 
 echo "Started script in folder: $PWD"
-echo "Use $env and $cpus cpus"
-env=${env:-rdkit}
 cpus=${cpus:-2}
-#conda activate $env
-echo "Use $env and $cpus cpus"
+threshold=${threshold:-0.7}
+overwrite=${overwrite:-false}
+
+echo "Use $cpus cpus"
+echo "Threshold: $threshold"
+echo "Overwrite previous results: $overwrite"
 
 if ((12 % $cpus)); then
     echo "Pleas select for --cups either 1, 2, 3, 4, 6 or 12"
@@ -42,11 +50,15 @@ echo "Perform $n_iter loops."
 cmd=''
 for NO in 0{1..9} {10..12}
 do
-    cmd="$cmd python search_database_singleprocess.py --input_folder ./blobs/part_$NO --pattern pkl &"
+    cmd="$cmd python search_database_singleprocess.py \
+        --input_folder ./blobs/part_$NO --pattern pkl \
+        --reference_mol '$query' \
+        --tanimoto_threshold '$threshold' \
+        --force $overwrite &"
     if ! (($NO % $cpus)); then
-	    echo $cmd wait
-        eval $cmd wait
+	    echo "$cmd wait"
+        eval "$cmd wait"
         cmd=''
     fi
 done
-sleep 30
+eval python combine_results.py --resultpath 'results/$query' --threshold $threshold
