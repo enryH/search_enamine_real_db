@@ -48,15 +48,16 @@ n_iter=$((12/$cpus))
 echo "Perform $n_iter loops."
 
 cmd=''
-for NO in 0{1..9} {10..12}
+for NO in {1..12} #  0{1..9} {10..12};
 do
-    cmd="$cmd python search_database_singleprocess.py \
-        --input_folder ./blobs/part_$NO --pattern pkl \
-        --reference_mol '$query' \
-        --tanimoto_threshold '$threshold' \
-        --force $overwrite &"
+    if (($NO < 10)); then
+	    cmd="$cmd python search_database_singleprocess.py --input_folder ./blobs/part_0$NO"
+    else
+	    cmd="$cmd python search_database_singleprocess.py --input_folder ./blobs/part_$NO"
+    fi
+    cmd="$cmd --pattern pkl --reference_mol '$query' --tanimoto_threshold '$threshold' --force $overwrite & "
     if ! (($NO % $cpus)); then
-	    echo "$cmd wait"
+	echo "$cmd wait"
         eval "$cmd wait"
         cmd=''
     fi
