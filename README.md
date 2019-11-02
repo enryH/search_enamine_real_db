@@ -1,51 +1,51 @@
+# Similarity Search of Enamine REAL
+In a first approach multitasking was tried to effectively find similar fingerprints. However, this did not scale good enough. Using the approach of caching the fingerprints before quering the ENAMINE REAL database brought down the search time on 12 CPUs to less than 30mins.
 
-### ToDos
-- [chemfp](https://chemfp.readthedocs.io/en/latest/using-api.html)
-- add caching of fingerprints
-- test on server
-- check [fragmentation algorithm](https://www.rdkit.org/docs/source/rdkit.Chem.Fraggle.FraggleSim.html#fragmentation-algorithm) on results?
-- Speed up data preparation: Ideas
-     -  [load chuncs](https://stackoverflow.com/questions/49752452/using-a-python-generator-to-process-large-text-files)
+The python scripts can be executed using two shell scripts.
 
-## Install rdkit using anaconda
+```
+user@server: ls bin/
+create_blobs.sh  
+run_search.sh  
+```
+After the setup (see below), execute both scripts using up to 12 CPUs from the folder you cloned this repository to, e.g. `~/search_enamine_real_db`:
+```
+bash bin/create_blobs.sh --cpus 12
+bash bin/run_search --cpus 12 --query 'C1C=CC....' --threshold 0.8 --force false
+``` 
+
+Currently the query uses the rdkit fingerprint (daylight), but you can in principle pick any in [rdkit available fingerprint](https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-fingerprints). As metric the Tanimoto coefficient is used, but please feel to select any in [rdkit available](https://www.rdkit.org/docs/GettingStartedInPython.html#fingerprinting-and-molecular-similarity), e.g.: Tanimoto, Dice, Cosine, Sokal, Russel, Kulczynski, McConnaughey, and Tversky.
+
+For now only single molecules can be queried, but it would be straight forward to implent multiple ligand queries.
+
+## Setup
+### Install rdkit using anaconda
 - install [rdkit](https://www.rdkit.org/docs/Install.html#cross-platform-under-anaconda-python-fastest-install) using anaconda
 - add [postgres](https://www.rdkit.org/docs/Install.html#installing-and-using-postgresql-and-the-rdkit-postgresql-cartridge-from-a-conda-environment) installation using anaconda
 
-## Solution using rdkit functionality
-1. Create Postgres Database [Cartridge](https://www.rdkit.org/docs/Cartridge.html)
-2. Use [SimilarityScreener](https://www.rdkit.org/docs/source/
-rdkit.Chem.Fingerprints.SimilarityScreener.html#rdkit.Chem.Fingerprints.SimilarityScreener.SimilarityScreener)
-
 ### Data
-
 Download the Enamine REAL files (log in needed):
 ```bash
 >>> wc -l 2019q1-2_Enamine_REAL_723M_SMILES_Part_01.smiles
 60262532 2019q1-2_Enamine_REAL_723M_SMILES_Part_01.smiles
 ```
 
-List of available Fingerprints in rdkit: [here](https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-fingerprints)
-
-### Similarity metrics between Fingerprints
-- Available similarity metrics include Tanimoto, Dice, Cosine, Sokal, Russel, Kulczynski, McConnaughey, and Tversky.
+List of available Fingerprints in rdkit: [here]
 
 
-## Excecution Time
-- Read 100000 lines
-- Compare to 1 reference molecule
+## Excecution Time of on the fly calculation of fingerprints
+It is also possible to execute the script calculating fingerprints on the fly.
 
 ```
-C:\Users\kzl465\Documents\rotation_3>ipython search_database.py -i
-Python 3.6.9 |Anaconda, Inc.| (default, Jul 30 2019, 14:00:49) [MSC v.1915 64 bit (AMD64)]
-Type 'copyright', 'credits' or 'license' for more information
-IPython 7.8.0 -- An enhanced Interactive Python. Type '?' for help.
-Fingerprint lenght: 2048
-Script is executed from: C:\Users\kzl465\Documents\rotation_3
-Found 1 input files:
-- data\2019q1-2_Enamine_REAL_723M_SMILES_Part_01.smiles
-[11:43:50] SMILES Parse Error: syntax error for input: 'smiles'
-Failed to read line 0
-[]
+user@server: ~/search_enamine_real_db$ python search_database_singleprocess.py 
+```
+This will take less than 4 minutes and does
+- read 100000 lines
+- compares to 1 default molecule 
+
+Profiling of the script yields that the calculation of the fingerprint is the most time consuming operation.
+```cmd
+(user@server):~/search_enamine_real_db$ python search_database.py 
 
          703686 function calls in 223.656 seconds
 
@@ -85,7 +85,32 @@ Failed to read line 0
 
 Time elapsed 00:03:50
 ```
+> Main bottleneck is the calculation of fingerprints which seems to be CPU intensive 
 
-
-## Generators
+## Notes
+### Generators
 - Since Python 3.7 Generators are stop using `return` instead of `stopIteration`
+
+### Moding and integers in bash
+On the server an integer with a leading error throws an error if it is larger than seven:
+```cmd
+user@cosmos: echo $((07 % 12))                                                                                                                                                                      7           7
+user@cosmos: echo $((08 % 12))                                                                                                                                                                      7          
+-bash: 08: value too great for base (error token is "08")
+```
+- Wanted: looping with integers of two digits, [see] (https://stackoverflow.com/questions/5099119/adding-a-zero-to-single-digit-variable)
+
+
+## ToDos
+### Self-build solution
+- check [fragmentation algorithm](https://www.rdkit.org/docs/source/rdkit.Chem.Fraggle.FraggleSim.html#fragmentation-algorithm) on results?
+- Speed up building of fingerprints: Ideas
+     -  [load chuncs](https://stackoverflow.com/questions/49752452/using-a-python-generator-to-process-large-text-files)
+
+### Solution using chemfp
+- [chemfp](https://chemfp.readthedocs.io/en/latest/using-api.html)
+
+### Solution using rdkit functionality
+1. Create Postgres Database [Cartridge](https://www.rdkit.org/docs/Cartridge.html)
+2. Use [SimilarityScreener](https://www.rdkit.org/docs/source/rdkit.Chem.Fingerprints.SimilarityScreener.html#rdkit.Chem.Fingerprints.SimilarityScreener.SimilarityScreener)
+

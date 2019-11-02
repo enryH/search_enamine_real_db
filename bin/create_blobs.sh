@@ -3,7 +3,7 @@
 usage()
 {   
     echo "Creates binary files for Enamine project."
-    echo "./create_blobs.sh -e rdkit-env --cpus 4 | [-h]]"
+    echo "./create_blobs.sh --cpus 4 | [-h]]"
     echo "--cpus: 2, 3, 4, 6 or 12"
 }
 
@@ -11,9 +11,6 @@ while [ "$1" != "" ]; do
     case $1 in
         -c | --cpus )           shift
                                 cpus=$1
-                                ;;
-        -e | --env )            shift
-                                env=$1
                                 ;;
         -h | --help )           usage
                                 exit
@@ -24,11 +21,8 @@ while [ "$1" != "" ]; do
     shift
 done
 
-echo "Use $env and $cpus cpus"
-env=${env:-rdkit}
 cpus=${cpus:-2}
-#conda activate $env
-echo "Use $env and $cpus cpus"
+echo "Use $cpus cpus"
 
 if ((12 % $cpus)); then
     echo "Pleas select for --cups either 2, 3, 4, 6 or 12"
