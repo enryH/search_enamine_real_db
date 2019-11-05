@@ -3,8 +3,14 @@
 usage()
 {   
     echo "Search Enamine database using stored fingerprints in ./blobs/"
-    echo "./run_search.sh -e rdkit-env --cpus 4 | [-h]]"
-    echo "--cpus: 1, 2, 3, 4, 6 or 12"
+    echo "./run_search.sh --cpus 4 --query [SMILES] --threshold 0.8 | [-h]]"
+    echo ""
+    echo "--cpus                  # of CPUs: 1, 2, 3, 4, 6 or 12"
+    echo "--query                 Query molecule as SMILES" 
+    echo "-t, --threshold         Similarity threshold to keep results, default 0.7"
+    echo "--force                 Overwrite previous results, default false"
+    echo ""
+    echo "-h, --help              Display this help message."
 }
 
 while [ "$1" != "" ]; do

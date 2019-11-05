@@ -13,6 +13,7 @@ After the setup (see below), execute both scripts using up to 12 CPUs from the f
 bash bin/create_blobs.sh --cpus 12
 bash bin/run_search --cpus 12 --query 'C1C=CC....' --threshold 0.8 --force false
 ``` 
+> NOTE: This will create blobs of roughly 590GBs!
 
 Currently the query uses the rdkit fingerprint (daylight), but you can in principle pick any in [rdkit available fingerprint](https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-fingerprints). As metric the Tanimoto coefficient is used, but please feel to select any in [rdkit available](https://www.rdkit.org/docs/GettingStartedInPython.html#fingerprinting-and-molecular-similarity), e.g.: Tanimoto, Dice, Cosine, Sokal, Russel, Kulczynski, McConnaughey, and Tversky.
 
@@ -42,6 +43,86 @@ Download the [Enamine REAL](https://enamine.net/library-synthesis/real-compounds
 
 List of available Fingerprints in rdkit: [here]
 
+## Usage Details
+There are several keyword arguments you can pass to the python scripts, of which some can be further passed to 
+the available shell scripts.
+
+Arguments of `src/create_blobs.py`:
+```cmd
+user@server:~/search_enamine_real_db$ python create_blobs.py --help
+usage: create_blobs.py [-h] [--reference_mol REFERENCE_MOL]
+                       [--input_folder INPUT_FOLDER] [--pattern PATTERN]
+                       [--tanimoto_threshold TANIMOTO_THRESHOLD] [-f FORCE]
+                       [--outpath OUTPATH] [-n NUMBER]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --reference_mol REFERENCE_MOL
+                        Molecule(s) of interest for which analoges are
+                        required.
+  --input_folder INPUT_FOLDER
+                        Search path for inputs. Subdirectories will be
+                        included!
+  --pattern PATTERN     pattern of files which should be
+  --tanimoto_threshold TANIMOTO_THRESHOLD
+                        Include virtual molecules with a similarity to
+                        targets.
+  -f FORCE, --force FORCE
+                        Set flag to overwrite previous results
+  --outpath OUTPATH     Path to save blobs of fingerprints.
+  -n NUMBER, --number NUMBER
+                        Select part of enamine real database. 1-12
+```
+
+None of the arguments is currently passed to the creation of blobs in `bin/create_blobs.sh`:
+```cmd
+user@server:~/search_enamine_real_db$ bash bin/create_blobs.sh --help
+Creates binary files for Enamine project.
+./create_blobs.sh --cpus 4 | [-h]]
+--cpus: 2, 3, 4, 6 or 12
+```
+
+
+Arugments of `src/search_database_singleprocess.py`:
+```
+user@server:~/search_enamine_real_db$ python search_database_singleprocess.py --help
+usage: search_database_singleprocess.py [-h] [--reference_mol REFERENCE_MOL]
+                                        [--input_folder INPUT_FOLDER]
+                                        [--pattern PATTERN]
+                                        [--tanimoto_threshold TANIMOTO_THRESHOLD]
+                                        [-f FORCE] [--outpath OUTPATH]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --reference_mol REFERENCE_MOL
+                        Molecule(s) of interest for which analoges are
+                        required.
+  --input_folder INPUT_FOLDER
+                        Search path for inputs. Subdirectories will be
+                        included!
+  --pattern PATTERN     pattern of files which should be
+  --tanimoto_threshold TANIMOTO_THRESHOLD
+                        Include virtual molecules with a similarity to
+                        targets.
+  -f FORCE, --force FORCE
+                        Set flag to overwrite previous results
+  --outpath OUTPATH     Path to save results.
+```
+
+which are partially available in `bin/run_search.sh`:
+```
+user@server:~/search_enamine_real_db$ bash bin/run_search.sh --help
+Search Enamine database using stored fingerprints in ./blobs/
+./run_search.sh --cpus 4 --query [SMILES] --threshold 0.8 | [-h]]
+
+--cpus                  # of CPUs: 1, 2, 3, 4, 6 or 12
+--query                 Query molecule as SMILES
+-t, --threshold         Similarity threshold to keep results, default 0.7
+--force                 Overwrite previous results, default false
+
+-h, --help              Display this help message.
+
+```
 
 ## Excecution Time of on the fly calculation of fingerprints
 It is also possible to execute the script calculating fingerprints on the fly.
