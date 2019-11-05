@@ -31,12 +31,12 @@ done
 
 echo "Started script in folder: $PWD"
 cpus=${cpus:-2}
-inputfolder=${inputfolder:data}
+folder=${folder:-data}
 # overwrite=${overwrite:-false}
 
 echo "Use $cpus cpus"
 echo "Use input-folder: $inputfolder"
-cd $inputfolder
+cd $folder
 
 # echo "Overwrite previous results: $overwrite"
 
@@ -45,6 +45,6 @@ if ((12 % $cpus)); then
     exit 1
 fi
 
-# unzip '*.zip' -f
-find . -name '*.zip' -print0 | xargs -0 -I {} -P $cpus unzip {} #-f
+# unzip -n '*.zip'
+find . -name '*.zip' -print0 | xargs -0 -I {} -P $cpus  unzip -n {}
 # https://askubuntu.com/questions/431478/decompressing-multiple-files-at-once
