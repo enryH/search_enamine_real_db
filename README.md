@@ -18,13 +18,23 @@ Currently the query uses the rdkit fingerprint (daylight), but you can in princi
 
 For now only single molecules can be queried, but it would be straight forward to implent multiple ligand queries.
 
+The system was used (base) user@server:~/search_enamine_real_db$ uname -mrsv                                                                 Linux 4.15.0-45-generic #48-Ubuntu SMP Tue Jan 29 16:28:13 UTC 2019 x86_64  
+
 ## Setup
+The functionality was tested on a custom linux server:
+```
+(base) user@server:~/search_enamine_real_db$ uname -mrsv                                                                 Linux 4.15.0-45-generic #48-Ubuntu SMP Tue Jan 29 16:28:13 UTC 2019 x86_64  
+```
+using `Intel(R) Xeon(R) Platinum 8180 CPU @ 2.50GHz` CPUs
+
 ### Install rdkit using anaconda
 - install [rdkit](https://www.rdkit.org/docs/Install.html#cross-platform-under-anaconda-python-fastest-install) using anaconda
+
+Optional:
 - add [postgres](https://www.rdkit.org/docs/Install.html#installing-and-using-postgresql-and-the-rdkit-postgresql-cartridge-from-a-conda-environment) installation using anaconda
 
 ### Data
-Download the Enamine REAL files (log in needed):
+Download the [Enamine REAL](https://enamine.net/library-synthesis/real-compounds/real-database#) files (log in needed):
 ```bash
 >>> wc -l 2019q1-2_Enamine_REAL_723M_SMILES_Part_01.smiles
 60262532 2019q1-2_Enamine_REAL_723M_SMILES_Part_01.smiles

@@ -1,3 +1,10 @@
+"""
+Process a single `.smiles` file and dump every Million molecules a blob storing 
+the precalculated fingerprint. Fingerprint is the RDKit Fingerprint (Daylight).
+
+python create_blobs.py -n 1 --outpath blobs --input_folder data
+"""
+
 import os
 import pickle
 import argparse
@@ -21,7 +28,7 @@ from utils import format_duration
 from utils import BlobsIO
 
 
-N_PER_FILE = 60262532
+N_PER_FILE = 60262532 # used only for progress bar
 
 
 parser = argparse.ArgumentParser()

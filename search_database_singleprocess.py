@@ -1,11 +1,14 @@
 """
-    ipython search_database_singleprocess.py -i -- --input_folder blobs --pattern pkl --reference_mol CCC1CC
+Screening molecules against REAL Enamine database. 
+Giving `.smiles`-files as input will read the file(s) in the input-folder line by line,
+compute the SMILES fingerprint representation and then compare to the reference.
+Specifying as pattern pickeld files, ending on `.pkl`, will read in preprocessed files.
+The current fingerprint for comparing molecules is the RDKit-Fingerprint (Daylight). 
+
+python search_database_singleprocess.py --input_folder blobs --pattern pkl --reference_mol CCC1CC
 """
-
-
 import os
 import argparse
-import profile
 
 from datetime import datetime
 
@@ -44,7 +47,7 @@ reference = Chem.MolFromSmiles(args.reference_mol)
 fp_reference= Fingerprint(reference)
 ref = fp_reference
 
-print(f"Fingerprint lenght: {ref.GetNumBits()}")
+print(f"Fingerprint length: {ref.GetNumBits()}")
 
 _cwd, inpath, outpath, inputs = process_args(args)
 
@@ -77,9 +80,7 @@ def check_for_part_in_path(path:pathlib.Path):
     else:
         return ''
 
-
 def check_file(filename, ref=ref, limit=100000):
-    # global results
     results = []
     path = pathlib.Path(filename)
     file_type=path.suffix
@@ -90,9 +91,10 @@ def check_file(filename, ref=ref, limit=100000):
                     result = process_row_str(row)
                     if result is not None:
                         results.append(result)
-                        # if len(results) > 1000:
-                        #     dump(results)
-                        #     results = []
+                        # # Save results every N found molecules
+                        if len(results) > 1000:
+                            dump(results)
+                            results = []
                 except:
                     print(f"Failed to read line {line_no}")
                 if line_no >= limit:
@@ -113,9 +115,9 @@ def check_file(filename, ref=ref, limit=100000):
                     idx, fp, smiles = _tuple
                     tanimoto_sim = TanimotoSimilarity(ref, fp)
                     if tanimoto_sim >= args.tanimoto_threshold:
-                        # print(f"Added Molecule to results: {idx}")
                         result = make_string(smiles, idx, tanimoto_sim)
                         results.append(result)
+                        # # Save results every N found molecules
                         if len(results) >= 1000:
                             dump(results)
                             results = []
@@ -136,4 +138,3 @@ for filename in inputs:
 
 endtime = datetime.now()
 print(format_duration(starttime, endtime))
-
